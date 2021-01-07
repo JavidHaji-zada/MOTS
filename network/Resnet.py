@@ -64,6 +64,73 @@ def pretrained_resnet_conv4(image, num_blocks, tower_setup, freeze_c2=True):
   return [c2, c3, c4]
 
 
+def pretrained_xception_done(image, num_blocks, tower_setup, freeze_c2=True):
+  assert len(num_blocks) == 3
+  l = tf.pad(image, [[0, 0], [2, 3], [2, 3], [0, 0]])
+
+  l = Conv(name='conv0', inputs=[l], n_features=32, tower_setup=tower_setup, filter_size=(3, 3),
+           activation='relu', padding='VALID', batch_norm=True, old_order=True).outputs[0]
+  l = Conv(name='conv1', inputs=[l], n_features=64, tower_setup=tower_setup, filter_size=(3, 3),
+           activation='relu', padding='VALID', batch_norm=True, old_order=True).outputs[0]
+
+  l = Conv(name='conv2', inputs=[l], n_features=128, tower_setup=tower_setup, filter_size=(3, 3),
+           activation='relu', padding='VALID', batch_norm=True, old_order=True).outputs[0]
+  l = Conv(name='conv3', inputs=[l], n_features=128, tower_setup=tower_setup, filter_size=(3, 3),
+           activation='relu', padding='VALID', batch_norm=True, old_order=True).outputs[0]
+
+  l = max_pool(l, shape=[3, 3], strides=[2, 2], padding='SAME')
+
+  l = Conv(name='conv4', inputs=[l], n_features=256, tower_setup=tower_setup, filter_size=(3, 3),
+         activation='relu', padding='VALID', batch_norm=True, old_order=True).outputs[0]
+  l = Conv(name='conv5', inputs=[l], n_features=256, tower_setup=tower_setup, filter_size=(3, 3),
+         activation='relu', padding='VALID', batch_norm=True, old_order=True).outputs[0]
+
+  l = max_pool(l, shape=[3, 3], strides=[2, 2], padding='SAME')
+
+  l = Conv(name='conv6', inputs=[l], n_features=728, tower_setup=tower_setup, filter_size=(3, 3),
+           activation='relu', padding='VALID', batch_norm=True, old_order=True).outputs[0]
+  l = Conv(name='conv7', inputs=[l], n_features=728, tower_setup=tower_setup, filter_size=(3, 3),
+           activation='relu', padding='VALID', batch_norm=True, old_order=True).outputs[0]
+
+  l = max_pool(l, shape=[3, 3], strides=[2, 2], padding='SAME')
+
+
+  l = Conv(name='conv8', inputs=[l], n_features=728, tower_setup=tower_setup, filter_size=(3, 3),
+           activation='relu', padding='VALID', batch_norm=True, old_order=True).outputs[0]
+  l = Conv(name='conv9', inputs=[l], n_features=728, tower_setup=tower_setup, filter_size=(3, 3),
+           activation='relu', padding='VALID', batch_norm=True, old_order=True).outputs[0]
+  l = Conv(name='conv10', inputs=[l], n_features=728, tower_setup=tower_setup, filter_size=(3, 3),
+           activation='relu', padding='VALID', batch_norm=True, old_order=True).outputs[0]
+
+
+
+  l = Conv(name='conv11', inputs=[l], n_features=728, tower_setup=tower_setup, filter_size=(3, 3),
+           activation='relu', padding='VALID', batch_norm=True, old_order=True).outputs[0]
+  l = Conv(name='conv12', inputs=[l], n_features=1024, tower_setup=tower_setup, filter_size=(3, 3),
+           activation='relu', padding='VALID', batch_norm=True, old_order=True).outputs[0]
+
+  l = max_pool(l, shape=[3, 3], strides=[2, 2], padding='SAME')
+
+  l = Conv(name='conv13', inputs=[l], n_features=1536, tower_setup=tower_setup, filter_size=(3, 3),
+           activation='relu', padding='VALID', batch_norm=True, old_order=True).outputs[0]
+  l = Conv(name='conv14', inputs=[l], n_features=2048, tower_setup=tower_setup, filter_size=(3, 3),
+         activation='relu', padding='VALID', batch_norm=True, old_order=True).outputs[0]
+
+  l = max_pool(l, shape=[3, 3], strides=[2, 2], padding='SAME')
+
+  l = Conv(name='conv15', inputs=[l], n_features=2048, tower_setup=tower_setup, filter_size=(1, 1),
+           activation='relu', padding='VALID', batch_norm=True, old_order=True).outputs[0]
+
+
+  c2 = resnet_group(l, 'group0', 64, num_blocks[0], 1, tower_setup)
+  if freeze_c2:
+    c2 = tf.stop_gradient(c2)
+  c3 = resnet_group(c2, 'group1', 128, num_blocks[1], 2, tower_setup)
+  c4 = resnet_group(c3, 'group2', 256, num_blocks[2], 2, tower_setup)
+
+  return [c2, c3, c4]
+
+
 def pretrained_resnet50_conv4(image, tower_setup, freeze_c2=True):
   return pretrained_resnet_conv4(image, [3, 4, 6], tower_setup, freeze_c2)
 
@@ -72,6 +139,9 @@ def pretrained_resnet101_conv4(image, tower_setup, freeze_c2=True):
   return pretrained_resnet_conv4(image, [3, 4, 23], tower_setup, freeze_c2)
 
 
+def pretrained_xception(image, tower_setup, freeze_c2=True):
+  return pretrained_xception_done(image, [3, 4, 23], tower_setup, freeze_c2)
+
 def add_resnet_conv5(image, tower_setup):
   c5 = resnet_group(image, 'group3', 512, 3, 2, tower_setup)
   return [c5]
@@ -79,8 +149,8 @@ def add_resnet_conv5(image, tower_setup):
 
 # See also savitar1
 class ResNet(Layer):
-  def __init__(self, name, inputs, tower_setup, variant, add_conv5):
-    super(ResNet, self).__init__()
+  def _init_(self, name, inputs, tower_setup, variant, add_conv5):
+    super(ResNet, self)._init_()
     inp, n_features_inp = prepare_input(inputs)
     # for grayscale
     if n_features_inp == 1:
@@ -93,6 +163,8 @@ class ResNet(Layer):
         net = pretrained_resnet50_conv4(inp, tower_setup)
       elif variant == "resnet101":
         net = pretrained_resnet101_conv4(inp, tower_setup)
+      elif variant == "xception":
+        net = pretrained_xception(inp, tower_setup)
       else:
         assert False, "Unknown ResNet variant"
 
@@ -108,20 +180,25 @@ class ResNet(Layer):
 
 
 class ResNet50(ResNet):
-  def __init__(self, name, inputs, tower_setup):
-    super(ResNet50, self).__init__(name, inputs, tower_setup, variant="resnet50", add_conv5=True)
+  def _init_(self, name, inputs, tower_setup):
+    super(ResNet50, self)._init_(name, inputs, tower_setup, variant="resnet50", add_conv5=True)
 
 
 class ResNet50Conv4(ResNet):
-  def __init__(self, name, inputs, tower_setup):
-    super(ResNet50Conv4, self).__init__(name, inputs, tower_setup, variant="resnet50", add_conv5=False)
+  def _init_(self, name, inputs, tower_setup):
+    super(ResNet50Conv4, self)._init_(name, inputs, tower_setup, variant="resnet50", add_conv5=False)
 
 
 class ResNet101(ResNet):
-  def __init__(self, name, inputs, tower_setup):
-    super(ResNet101, self).__init__(name, inputs, tower_setup, variant="resnet101", add_conv5=True)
+  def _init_(self, name, inputs, tower_setup):
+    super(ResNet101, self)._init_(name, inputs, tower_setup, variant="resnet101", add_conv5=True)
 
 
 class ResNet101Conv4(ResNet):
-  def __init__(self, name, inputs, tower_setup):
-    super(ResNet101Conv4, self).__init__(name, inputs, tower_setup, variant="resnet101", add_conv5=False)
+  def _init_(self, name, inputs, tower_setup):
+    super(ResNet101Conv4, self)._init_(name, inputs, tower_setup, variant="resnet101", add_conv5=False)
+
+
+class XCeption_TOM(ResNet):
+  def _init_(self, name, inputs, tower_setup):
+    super(XCeption_TOM, self)._init_(name, inputs, tower_setup, variant="xception", add_conv5=False)
