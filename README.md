@@ -1,13 +1,10 @@
 # TrackR-CNN
 Code for the TrackR-CNN baseline for the Multi Object Tracking and Segmentation (MOTS) task.
 
-## Project website (including annotations)
-https://www.vision.rwth-aachen.de/page/mots
-
 ## Paper
 ### MOTS: Multi-Object Tracking and Segmentation
 
-Paul Voigtlaender, Michael Krause, Aljosa Osep, Jonathon Luiten, Berin Balachandar Gnana Sekar, Andreas Geiger and Bastian Leibe
+Javid Haji-zada, Anar Huseynov, and Leyla Ismayilova
 
 https://www.vision.rwth-aachen.de/media/papers/mots-multi-object-tracking-and-segmentation/MOTS.pdf
 
@@ -20,9 +17,9 @@ You'll need to install the following packages (possibly more):
 ```
 tensorflow-gpu pycocotools numpy scipy sklearn pypng opencv-python munkres
 ```
-In particular, the code has been tested with Python 3.6.7 and Tensorflow 1.13.1 running on a single GTX 1080 Ti gpu. While there is experimental support for multi-gpu training through the "gpus" config flag, some users have reported problems with this, so we recommend using one gpu only.
+In particular, the code has been tested with Python 3.6.7 and Tensorflow-GPU 1.14.0 running on a single GTX 1080 Ti gpu.
 
-Furthermore, you'll need the [KITTI MOTS](https://www.vision.rwth-aachen.de/page/mots) dataset, where we assume you have a folder /path/to/kitti_mots with subfolders /path/to/kitti_mots/images containing the input images (i.e. there exist subfolders /path/to/kitti_mots/images/0000, /path/to/kitti_mots/images/0001, ...) and /path/to/kitti_mots/instances  (again with subfolders 0000, 0001, ...) containing the annotations.
+Furthermore, you'll need the [KITTI MOTS](https://s3.eu-central-1.amazonaws.com/avg-kitti/data_tracking_image_2.zip) dataset, where we assume you have a folder /path/to/kitti_mots with subfolders /path/to/kitti_mots/images containing the input images (i.e. there exist subfolders /path/to/kitti_mots/images/0000, /path/to/kitti_mots/images/0001, ...) and /path/to/kitti_mots/instances  (again with subfolders 0000, 0001, ...) containing the annotations.
 
 Also, create the following directories for logs, model files etc. in the base directory of the repository:
 ```
@@ -74,7 +71,7 @@ python main.py configs/conv3d_sep2
 ```
 
 ### Forwarding and tracking
-Either first train your own model as described above, or download [our model](https://omnomnom.vision.rwth-aachen.de/data/trackrcnn/conv3d_sep2-00000005.zip) and extract the files into models/conv3d_sep2/
+Either first train your own model as described above, or download [previously trained](https://omnomnom.vision.rwth-aachen.de/data/trackrcnn/conv3d_sep2-00000005.zip) and extract the files into models/conv3d_sep2/
 
 To obtain the model's predictions (we call this "forwarding") run:
 ```
@@ -102,7 +99,7 @@ where `/path/to/detections/` is a folder containing the model output on the trai
 Parts of this code are based on Tensorpack (https://github.com/tensorpack/tensorpack/tree/master/examples/FasterRCNN) and RETURNN (https://github.com/rwth-i6/returnn/blob/master/Log.py).
 
 ## Citation
-If you use this code, please cite:
+Citation
 ```
 @inproceedings{Voigtlaender19CVPR_MOTS,
  author = {Paul Voigtlaender and Michael Krause and Aljosa Osep and Jonathon Luiten and Berin Balachandar Gnana Sekar and Andreas Geiger and Bastian Leibe},
@@ -111,11 +108,3 @@ If you use this code, please cite:
  year = {2019},
 }
 ```
-
-## License
-MIT License
-
-## Contact
-If you find a problem in the code, please open an issue.
-
-For general questions, please contact Paul Voigtlaender (voigtlaender@vision.rwth-aachen.de) or Michael Krause (michael.krause@rwth-aachen.de)
